@@ -1,0 +1,143 @@
+
+<nav class="header">
+  <ul>
+    <a href="#galleria"><li id = "gallery_nav">GALLERY</li></a>
+    <a href="#top"><li id = "top_nav">TOP</li></a>
+    <a href="#about-nav" ><li id = "about_nav">ABOUT</li></a>
+  </ul>
+</nav> 
+
+<div id="wrapper">
+  <div id="center-piece">
+    <ul>
+      <li><img class="center" src="http://farm7.staticflickr.com/6100/6342126493_caa3510b7d.jpg"></li>
+    </ul>
+  </div>
+  <a name="galleria"></a>
+  <div class="header-space"></div>
+  <div id="gallery">
+    <div class="title">
+      <p><br>GALLERY  </p>
+    </div>
+    <br>
+    <div class="gallery_content">
+      <div data-bind="foreach: pieces">
+        <ul>
+          <li>
+            <img data-bind="attr: {src: image_url}, click: openLightbox" src="#"><br><br>
+<!--             <p data-bind='text: title'></p> <br> <br> -->
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <a name="about-nav"></a>
+    <div class="header-space"></div>
+    <div id="about">
+      <div class="title">
+        <p><br>ABOUT OSCAR  </p>
+      </div>
+      <div class="about-content">
+        <ul>
+          <li>
+            <p> Lorem ipsum curabitur duis lobortis nisl ut habitasse aliquam turpis, torquent diam porttitor justo proin tincidunt aenean litora blandit commodo porta egestas a porttitor molestie aliquet fames cras, integer tempus ac aenean suspendisse convallis eros netus, bibendum arcu curabitur dapibus rhoncus et donec lacus platea eget urna commodo scelerisque aptent aliquam, curabitur justo auctor molestie erat fermentum urna, feugiat nunc dictum sit elementum.</p>
+          </li>
+          <li><img src="http://2.bp.blogspot.com/-E9VarneqzxA/T6GiysPKczI/AAAAAAAAAhk/QMPIg9Y29io/s1600/smile.JPG"></li>
+          <li>Contact: oscarsayulita@yahoo.com</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+<div id="lightbox" data-bind="with: lightbox_piece">
+  <h2 data-bind="text: title" style="float: left; padding: 15px; color: white;"></h2>
+  <h2 id="close_lightbox" style="float: right; padding: 15px; color: white;" data-bind="click: click_close">X  </h2>
+  <img data-bind="attr: {src: image_url}" src="#" class="lightbox_image">
+</div>
+
+<script type="text/javascript">
+
+var onCloseLightbox = function(e) {
+  var lightbox = document.getElementById("lightbox");
+  lightbox.className = "invisible";
+
+}
+
+
+function View(){
+  var self = this;
+
+  self.pieces = ko.observable();
+  self.lightbox_piece = ko.observable();
+
+  var observable_pieces = [];
+  $.get('/index.json', function(data) {
+    
+    for(var i = 0; i < data.length; i++){
+      var piece = new Piece(data[i], self);
+      observable_pieces.push(piece);
+    }
+
+    self.pieces(observable_pieces);
+
+  })
+
+
+
+
+}
+
+function Piece(data, view) {
+  var self = this;
+
+  self.title = ko.observable(data.title);
+  self.image_url = ko.observable(data.url);
+  self.description = ko.observable(data.description);
+
+  self.id = data.id;
+
+  ko.computed(function(){
+    $.post('/pieces/' + self.id + '/update', {piece: {title: self.title(), description: self.description()}})
+  })
+
+
+  self.openLightbox = function(){
+    // console.log('open lightbox')
+    var lightbox = document.getElementById("lightbox")
+    lightbox.style.height = (window.innerWidth - 690) + "px"
+    lightbox.style.width = (window.innerWidth - 200) + "px"
+    // lightbox.style.top = "10px"
+    view.lightbox_piece(self);
+
+  }
+
+  self.click_close = function() {
+      var lightbox = document.getElementById("lightbox");
+      lightbox.style.height = "0px";
+      lightbox.style.width = "0px";
+      view.lightbox_piece(null); 
+
+    }
+
+
+}
+
+window.view = view = new View();
+ko.applyBindings(view);
+
+ var closeLightbox = function(e) {
+  if (e.keyCode == 27) {
+    var lightbox = document.getElementById("lightbox");
+    lightbox.style.height = "0px";
+    lightbox.style.width = "0px";
+    view.lightbox_piece(null); 
+  }
+}
+
+
+window.addEventListener('keydown', closeLightbox);
+
+
+</script>
+

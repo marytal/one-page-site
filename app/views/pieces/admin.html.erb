@@ -1,0 +1,88 @@
+
+<div style="padding: 10px; margin: 20px;">
+  <form action="/pieces/admin" method="POST" enctype="multipart/form-data">
+
+    <legend>Add a piece of work:</legend>
+    URL:
+    <input type="text" name="url"><br> OR
+    <input type="file" name="some_file"><br>
+    .................................... <br>
+    <input type="text" name="title" placeholder="Title"><br>
+    <input type="text" name="description" placeholder="Description"><br>
+    <input type="submit"><br>
+  </form>
+</div>
+
+<div class="gallery_content" style="background-image: none; border-top: 5px solid black;">
+  <div data-bind="foreach: pieces">
+    <ul>
+      <li>
+        <img data-bind="attr: {src: image_url}" src="#"><br><br>
+        Title:
+        <input data-bind='value: title'> <br> <br>
+        Description:
+        <input data-bind='value: description'> <br> <br>
+        <a href="#" data-bind="click: $parent.removePiece">Remove</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<script type="text/javascript">
+
+
+function View(){
+  var self = this;
+
+  self.pieces = ko.observable();
+
+  var observable_pieces = [];
+  $.get('/index.json', function(data) {
+
+    
+    for(var i = 0; i < data.length; i++){
+      var piece = new Piece(data[i]);
+      observable_pieces.push(piece);
+    }
+
+    self.pieces(observable_pieces);
+
+  })
+
+  self.removePiece = function(){
+    console.log(this);
+    $.post('/pieces/delete/' + this.id, function(){
+      location.reload();
+    })
+
+  }
+
+
+
+}
+
+function Piece(data) {
+  var self = this;
+
+  self.title = ko.observable(data.title);
+  self.image_url = ko.observable(data.url);
+  self.description = ko.observable(data.description);
+
+  self.id = data.id;
+
+  ko.computed(function(){
+    $.post('/pieces/' + self.id + '/update', {piece: {title: self.title(), description: self.description()}})
+  })
+
+  // piece.remove = ko.computed(function() {
+  //   $.post('/delete/' + piece.id);
+  // })
+
+
+}
+
+window.view = view = new View();
+ko.applyBindings(view);
+
+
+</script>
