@@ -17,7 +17,8 @@ ActiveRecord::Schema.define(version: 20141106220233) do
   enable_extension "plpgsql"
 
   create_table "pieces", force: true do |t|
-    t.string   "url"
+    t.binary   "image"
+    t.string   "mime_type"
     t.string   "title"
     t.string   "description"
     t.integer  "views"
